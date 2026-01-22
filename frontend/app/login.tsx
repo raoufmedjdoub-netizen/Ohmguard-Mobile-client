@@ -102,12 +102,12 @@ export default function LoginScreen() {
             </View>
 
             <TouchableOpacity
-              style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+              style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
               onPress={handleLogin}
-              disabled={isLoading}
+              disabled={isSubmitting}
               activeOpacity={0.8}
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
                 <>
