@@ -1,40 +1,50 @@
-import React, { useEffect } from 'react';
-import { Slot, Redirect, useSegments } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../src/store/authStore';
 import { useAlertStore } from '../src/store/alertStore';
 import socketService from '../src/services/socket';
+import { tokenManager } from '../src/services/api';
 
-function AuthGuard() {
-  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+export default function RootLayout() {
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
   const { addNewAlert, updateAlertInList } = useAlertStore();
-  const segments = useSegments();
 
-  // Check auth on mount
+  // Determine initial route before rendering
   useEffect(() => {
-    checkAuth();
+    const checkInitialAuth = async () => {
+      try {
+        const token = await tokenManager.getAccessToken();
+        if (token) {
+          setInitialRoute('alerts');
+        } else {
+          setInitialRoute('login');
+        }
+      } catch (error) {
+        setInitialRoute('login');
+      }
+    };
+    checkInitialAuth();
   }, []);
 
-  // Setup socket listeners
+  // Setup socket listeners when authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      socketService.setOnNewAlert((alert) => {
-        addNewAlert(alert);
-      });
-      socketService.setOnEventUpdated((data) => {
-        updateAlertInList(data.event_id, data.update);
-      });
+    if (initialRoute === 'alerts') {
+      // User is authenticated, setup socket
+      const setupSocket = async () => {
+        const token = await tokenManager.getAccessToken();
+        if (token) {
+          // We'll connect socket when alerts screen loads
+        }
+      };
+      setupSocket();
     }
-    return () => {
-      socketService.setOnNewAlert(null);
-      socketService.setOnEventUpdated(null);
-    };
-  }, [isAuthenticated]);
+  }, [initialRoute]);
 
-  // Show loading while checking auth
-  if (isLoading) {
+  // Show loading until we determine the initial route
+  if (initialRoute === null) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#DC2626" />
@@ -43,27 +53,23 @@ function AuthGuard() {
     );
   }
 
-  // Check current route
-  const inAuthGroup = segments[0] === 'login';
-  const inAlertsGroup = segments[0] === 'alerts';
-
-  // Redirect based on auth state using Redirect component (not router.replace)
-  if (!isAuthenticated && !inAuthGroup) {
-    return <Redirect href="/login" />;
-  }
-
-  if (isAuthenticated && inAuthGroup) {
-    return <Redirect href="/alerts" />;
-  }
-
-  return <Slot />;
-}
-
-export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
-      <AuthGuard />
+      <Stack
+        initialRouteName={initialRoute}
+        screenOptions={{
+          headerStyle: { backgroundColor: '#1F2937' },
+          headerTintColor: '#FFFFFF',
+          headerTitleStyle: { fontWeight: '700' },
+          contentStyle: { backgroundColor: '#F3F4F6' },
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ title: 'Connexion', headerShown: false }} />
+        <Stack.Screen name="alerts/index" options={{ title: 'Alertes', headerBackVisible: false }} />
+        <Stack.Screen name="alerts/[id]" options={{ title: 'Détail Alerte', presentation: 'card' }} />
+      </Stack>
     </SafeAreaProvider>
   );
 }
