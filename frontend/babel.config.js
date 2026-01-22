@@ -1,5 +1,7 @@
 const path = require('path');
 
+console.log('>>> BABEL CONFIG LOADED <<<');
+
 module.exports = function(api) {
   api.cache(true);
   
@@ -7,7 +9,7 @@ module.exports = function(api) {
     presets: [
       ['babel-preset-expo', {
         worklets: false,
-        reanimated: false,  // Disable automatic plugin loading
+        reanimated: false,
       }],
     ],
     plugins: [
