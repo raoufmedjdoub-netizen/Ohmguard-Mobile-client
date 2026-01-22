@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,12 +9,15 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../src/store/authStore';
+import Colors from '../src/constants/colors';
+
+const LAST_EMAIL_KEY = 'ohmguard_last_email';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -24,10 +27,32 @@ export default function LoginScreen() {
   const { login, isSubmitting, error, clearError } = useAuthStore();
   const router = useRouter();
 
+  // Load last email on mount
+  useEffect(() => {
+    const loadLastEmail = async () => {
+      try {
+        const lastEmail = await AsyncStorage.getItem(LAST_EMAIL_KEY);
+        if (lastEmail) {
+          setEmail(lastEmail);
+        }
+      } catch (e) {
+        console.log('Could not load last email');
+      }
+    };
+    loadLastEmail();
+  }, []);
+
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs');
       return;
+    }
+
+    // Save email for next time
+    try {
+      await AsyncStorage.setItem(LAST_EMAIL_KEY, email.trim());
+    } catch (e) {
+      console.log('Could not save email');
     }
 
     const success = await login(email.trim(), password);
@@ -46,7 +71,7 @@ export default function LoginScreen() {
           {/* Logo / Header */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Ionicons name="shield-checkmark" size={64} color="#DC2626" />
+              <Ionicons name="shield-checkmark" size={64} color={Colors.primary} />
             </View>
             <Text style={styles.title}>OhmGuard</Text>
             <Text style={styles.subtitle}>Alerte Chute Mobile</Text>
@@ -56,20 +81,20 @@ export default function LoginScreen() {
           <View style={styles.form}>
             {error && (
               <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle" size={20} color="#DC2626" />
+                <Ionicons name="alert-circle" size={20} color={Colors.danger} />
                 <Text style={styles.errorText}>{error}</Text>
                 <TouchableOpacity onPress={clearError}>
-                  <Ionicons name="close" size={20} color="#DC2626" />
+                  <Ionicons name="close" size={20} color={Colors.danger} />
                 </TouchableOpacity>
               </View>
             )}
 
             <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={22} color="#9CA3AF" style={styles.inputIcon} />
+              <Ionicons name="mail-outline" size={22} color={Colors.textSecondary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Email"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={Colors.textSecondary}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -79,11 +104,11 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={22} color="#9CA3AF" style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={22} color={Colors.textSecondary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Mot de passe"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={Colors.textSecondary}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -96,7 +121,7 @@ export default function LoginScreen() {
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={22}
-                  color="#9CA3AF"
+                  color={Colors.textSecondary}
                 />
               </TouchableOpacity>
             </View>
@@ -133,7 +158,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1F2937',
+    backgroundColor: Colors.headerBg,
   },
   keyboardView: {
     flex: 1,
@@ -151,7 +176,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+    backgroundColor: 'rgba(37, 99, 235, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -159,12 +184,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: Colors.textLight,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#9CA3AF',
+    color: Colors.turquoise,
   },
   form: {
     marginBottom: 32,
@@ -179,14 +204,14 @@ const styles = StyleSheet.create({
   },
   errorText: {
     flex: 1,
-    color: '#DC2626',
+    color: Colors.danger,
     fontSize: 14,
     marginLeft: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#374151',
+    backgroundColor: Colors.background,
     borderRadius: 12,
     marginBottom: 16,
     paddingHorizontal: 16,
@@ -197,7 +222,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: '#FFFFFF',
+    color: Colors.textPrimary,
     fontSize: 16,
   },
   eyeButton: {
@@ -205,7 +230,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     flexDirection: 'row',
-    backgroundColor: '#DC2626',
+    backgroundColor: Colors.turquoise,
     borderRadius: 12,
     height: 56,
     alignItems: 'center',
@@ -213,10 +238,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   loginButtonDisabled: {
-    backgroundColor: '#6B7280',
+    backgroundColor: Colors.textSecondary,
   },
   loginButtonText: {
-    color: '#FFFFFF',
+    color: Colors.textLight,
     fontSize: 18,
     fontWeight: '700',
     marginLeft: 8,
@@ -225,7 +250,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    color: '#6B7280',
+    color: Colors.textSecondary,
     fontSize: 12,
   },
 });

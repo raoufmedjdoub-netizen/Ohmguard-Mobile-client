@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Alert, EventStatus, SeverityType } from '../types';
+import Colors from '../constants/colors';
 
 interface AlertCardProps {
   alert: Alert;
@@ -19,28 +20,28 @@ interface AlertCardProps {
 const getSeverityColor = (severity: SeverityType): string => {
   switch (severity) {
     case 'HIGH':
-      return '#DC2626';
+      return Colors.danger;
     case 'MED':
-      return '#F59E0B';
+      return Colors.warning;
     case 'LOW':
-      return '#10B981';
+      return Colors.success;
     default:
-      return '#6B7280';
+      return Colors.textSecondary;
   }
 };
 
 const getStatusColor = (status: EventStatus): string => {
   switch (status) {
     case 'NEW':
-      return '#DC2626';
+      return Colors.danger;
     case 'ACK':
-      return '#F59E0B';
+      return Colors.turquoise;
     case 'RESOLVED':
-      return '#10B981';
+      return Colors.success;
     case 'FALSE_ALARM':
-      return '#6B7280';
+      return Colors.textSecondary;
     default:
-      return '#6B7280';
+      return Colors.textSecondary;
   }
 };
 
@@ -112,7 +113,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onPress }) => {
 
       <View style={styles.content}>
         <View style={styles.infoRow}>
-          <Ionicons name="time-outline" size={16} color="#6B7280" />
+          <Ionicons name="time-outline" size={16} color={Colors.textSecondary} />
           <Text style={styles.infoText}>
             {formatTimestamp(alert.occurred_at || alert.timestamp)}
           </Text>
@@ -120,7 +121,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onPress }) => {
 
         {alert.location_path && (
           <View style={styles.infoRow}>
-            <Ionicons name="location-outline" size={16} color="#6B7280" />
+            <Ionicons name="location-outline" size={16} color={Colors.textSecondary} />
             <Text style={styles.infoText} numberOfLines={1}>
               {alert.location_path}
             </Text>
@@ -129,7 +130,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onPress }) => {
 
         {alert.radar_name && (
           <View style={styles.infoRow}>
-            <Ionicons name="radio-outline" size={16} color="#6B7280" />
+            <Ionicons name="radio-outline" size={16} color={Colors.textSecondary} />
             <Text style={styles.infoText}>{alert.radar_name}</Text>
           </View>
         )}
@@ -137,7 +138,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onPress }) => {
 
       <View style={styles.footer}>
         <Text style={styles.viewDetail}>Voir le détail</Text>
-        <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+        <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
       </View>
     </TouchableOpacity>
   );
@@ -145,7 +146,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onPress }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.backgroundCard,
     borderRadius: 12,
     marginHorizontal: 16,
     marginVertical: 8,
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    color: '#FFFFFF',
+    color: Colors.textLight,
     fontSize: 11,
     fontWeight: '600',
   },
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#4B5563',
+    color: Colors.textSecondary,
     marginLeft: 8,
     flex: 1,
   },
@@ -211,12 +212,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: Colors.border,
     paddingTop: 12,
   },
   viewDetail: {
     fontSize: 14,
-    color: '#3B82F6',
+    color: Colors.primary,
     fontWeight: '600',
   },
 });

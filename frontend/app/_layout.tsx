@@ -7,12 +7,12 @@ import { useAuthStore } from '../src/store/authStore';
 import { useAlertStore } from '../src/store/alertStore';
 import socketService from '../src/services/socket';
 import { tokenManager } from '../src/services/api';
+import Colors from '../src/constants/colors';
 
 export default function RootLayout() {
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
   const { addNewAlert, updateAlertInList } = useAlertStore();
 
-  // Determine initial route before rendering
   useEffect(() => {
     const checkInitialAuth = async () => {
       try {
@@ -29,25 +29,22 @@ export default function RootLayout() {
     checkInitialAuth();
   }, []);
 
-  // Setup socket listeners when authenticated
   useEffect(() => {
     if (initialRoute === 'alerts') {
-      // User is authenticated, setup socket
       const setupSocket = async () => {
         const token = await tokenManager.getAccessToken();
         if (token) {
-          // We'll connect socket when alerts screen loads
+          // Socket will connect when alerts screen loads
         }
       };
       setupSocket();
     }
   }, [initialRoute]);
 
-  // Show loading until we determine the initial route
   if (initialRoute === null) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#DC2626" />
+        <ActivityIndicator size="large" color={Colors.turquoise} />
         <Text style={styles.loadingText}>Chargement...</Text>
       </View>
     );
@@ -59,10 +56,10 @@ export default function RootLayout() {
       <Stack
         initialRouteName={initialRoute}
         screenOptions={{
-          headerStyle: { backgroundColor: '#1F2937' },
-          headerTintColor: '#FFFFFF',
+          headerStyle: { backgroundColor: Colors.headerBg },
+          headerTintColor: Colors.textLight,
           headerTitleStyle: { fontWeight: '700' },
-          contentStyle: { backgroundColor: '#F3F4F6' },
+          contentStyle: { backgroundColor: Colors.backgroundSecondary },
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -79,10 +76,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1F2937',
+    backgroundColor: Colors.headerBg,
   },
   loadingText: {
-    color: '#FFFFFF',
+    color: Colors.textLight,
     marginTop: 16,
     fontSize: 16,
   },

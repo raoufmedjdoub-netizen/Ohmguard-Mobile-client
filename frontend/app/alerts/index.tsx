@@ -16,6 +16,7 @@ import { useAlertStore } from '../../src/store/alertStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { AlertCard } from '../../src/components/AlertCard';
 import { Alert, EventStatus } from '../../src/types';
+import Colors from '../../src/constants/colors';
 
 const STATUS_FILTERS: Array<{ value: EventStatus | 'ALL'; label: string }> = [
   { value: 'ALL', label: 'Toutes' },
@@ -29,7 +30,6 @@ export default function AlertsScreen() {
     alerts,
     isLoading,
     isRefreshing,
-    error,
     statusFilter,
     fetchAlerts,
     refreshAlerts,
@@ -52,55 +52,9 @@ export default function AlertsScreen() {
 
   const newAlertsCount = alerts.filter((a) => a.status === 'NEW').length;
 
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.headerTop}>
-        <View>
-          <Text style={styles.welcomeText}>Bonjour,</Text>
-          <Text style={styles.userName}>{user?.full_name || 'Utilisateur'}</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={24} color="#DC2626" />
-        </TouchableOpacity>
-      </View>
-
-      {newAlertsCount > 0 && (
-        <View style={styles.alertBanner}>
-          <Ionicons name="warning" size={24} color="#FFFFFF" />
-          <Text style={styles.alertBannerText}>
-            {newAlertsCount} alerte{newAlertsCount > 1 ? 's' : ''} en attente
-          </Text>
-        </View>
-      )}
-
-      {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
-        {STATUS_FILTERS.map((filter) => (
-          <TouchableOpacity
-            key={filter.value}
-            style={[
-              styles.filterTab,
-              statusFilter === filter.value && styles.filterTabActive,
-            ]}
-            onPress={() => setStatusFilter(filter.value)}
-          >
-            <Text
-              style={[
-                styles.filterTabText,
-                statusFilter === filter.value && styles.filterTabTextActive,
-              ]}
-            >
-              {filter.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-
   const renderEmptyList = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="checkmark-circle" size={64} color="#10B981" />
+      <Ionicons name="checkmark-circle" size={64} color={Colors.success} />
       <Text style={styles.emptyTitle}>Aucune alerte</Text>
       <Text style={styles.emptySubtitle}>
         {statusFilter === 'NEW'
@@ -110,38 +64,78 @@ export default function AlertsScreen() {
     </View>
   );
 
-  if (isLoading && alerts.length === 0) {
-    return (
-      <SafeAreaView style={styles.container} edges={['bottom']}>
-        {renderHeader()}
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#DC2626" />
-          <Text style={styles.loadingText}>Chargement des alertes...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <FlatList
-        data={alerts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <AlertCard alert={item} onPress={() => handleAlertPress(item)} />
+      {/* Fixed Header */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.welcomeText}>Bonjour,</Text>
+            <Text style={styles.userName}>{user?.full_name || 'Utilisateur'}</Text>
+          </View>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={24} color={Colors.danger} />
+          </TouchableOpacity>
+        </View>
+
+        {newAlertsCount > 0 && (
+          <View style={styles.alertBanner}>
+            <Ionicons name="warning" size={24} color={Colors.textLight} />
+            <Text style={styles.alertBannerText}>
+              {newAlertsCount} alerte{newAlertsCount > 1 ? 's' : ''} en attente
+            </Text>
+          </View>
         )}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyList}
-        contentContainerStyle={alerts.length === 0 ? styles.emptyList : styles.list}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={refreshAlerts}
-            colors={['#DC2626']}
-            tintColor="#DC2626"
-          />
-        }
-      />
+
+        {/* Filter Tabs */}
+        <View style={styles.filterContainer}>
+          {STATUS_FILTERS.map((filter) => (
+            <TouchableOpacity
+              key={filter.value}
+              style={[
+                styles.filterTab,
+                statusFilter === filter.value && styles.filterTabActive,
+              ]}
+              onPress={() => setStatusFilter(filter.value)}
+            >
+              <Text
+                style={[
+                  styles.filterTabText,
+                  statusFilter === filter.value && styles.filterTabTextActive,
+                ]}
+              >
+                {filter.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Scrollable Alert List */}
+      {isLoading && alerts.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Chargement des alertes...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={alerts}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <AlertCard alert={item} onPress={() => handleAlertPress(item)} />
+          )}
+          ListEmptyComponent={renderEmptyList}
+          contentContainerStyle={alerts.length === 0 ? styles.emptyList : styles.list}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={refreshAlerts}
+              colors={[Colors.primary]}
+              tintColor={Colors.primary}
+            />
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -149,16 +143,15 @@ export default function AlertsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.backgroundSecondary,
   },
   header: {
-    backgroundColor: '#1F2937',
+    backgroundColor: Colors.headerBg,
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 16,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    marginBottom: 8,
   },
   headerTop: {
     flexDirection: 'row',
@@ -167,11 +160,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   welcomeText: {
-    color: '#9CA3AF',
+    color: Colors.turquoise,
     fontSize: 14,
   },
   userName: {
-    color: '#FFFFFF',
+    color: Colors.textLight,
     fontSize: 20,
     fontWeight: '700',
   },
@@ -183,20 +176,20 @@ const styles = StyleSheet.create({
   alertBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#DC2626',
+    backgroundColor: Colors.danger,
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
   },
   alertBannerText: {
-    color: '#FFFFFF',
+    color: Colors.textLight,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 12,
   },
   filterContainer: {
     flexDirection: 'row',
-    backgroundColor: '#374151',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
     padding: 4,
   },
@@ -207,17 +200,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterTabActive: {
-    backgroundColor: '#DC2626',
+    backgroundColor: Colors.turquoise,
   },
   filterTabText: {
-    color: '#9CA3AF',
+    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 14,
     fontWeight: '600',
   },
   filterTabTextActive: {
-    color: '#FFFFFF',
+    color: Colors.textLight,
   },
   list: {
+    paddingTop: 8,
     paddingBottom: 24,
   },
   emptyList: {
@@ -230,7 +224,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    color: '#6B7280',
+    color: Colors.textSecondary,
     fontSize: 16,
   },
   emptyContainer: {
@@ -243,12 +237,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#374151',
+    color: Colors.textPrimary,
     marginTop: 16,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: Colors.textSecondary,
     marginTop: 8,
     textAlign: 'center',
   },

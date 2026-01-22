@@ -17,32 +17,33 @@ import { fr } from 'date-fns/locale';
 import { useAlertStore } from '../../src/store/alertStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { EventStatus, SeverityType } from '../../src/types';
+import Colors from '../../src/constants/colors';
 
 const getSeverityColor = (severity: SeverityType): string => {
   switch (severity) {
     case 'HIGH':
-      return '#DC2626';
+      return Colors.danger;
     case 'MED':
-      return '#F59E0B';
+      return Colors.warning;
     case 'LOW':
-      return '#10B981';
+      return Colors.success;
     default:
-      return '#6B7280';
+      return Colors.textSecondary;
   }
 };
 
 const getStatusInfo = (status: EventStatus): { color: string; label: string; icon: string } => {
   switch (status) {
     case 'NEW':
-      return { color: '#DC2626', label: 'NOUVELLE', icon: 'alert-circle' };
+      return { color: Colors.danger, label: 'NOUVELLE', icon: 'alert-circle' };
     case 'ACK':
-      return { color: '#F59E0B', label: 'ACQUITTÉE', icon: 'checkmark-circle' };
+      return { color: Colors.turquoise, label: 'ACQUITTÉE', icon: 'checkmark-circle' };
     case 'RESOLVED':
-      return { color: '#10B981', label: 'RÉSOLUE', icon: 'checkmark-done-circle' };
+      return { color: Colors.success, label: 'RÉSOLUE', icon: 'checkmark-done-circle' };
     case 'FALSE_ALARM':
-      return { color: '#6B7280', label: 'FAUSSE ALERTE', icon: 'close-circle' };
+      return { color: Colors.textSecondary, label: 'FAUSSE ALERTE', icon: 'close-circle' };
     default:
-      return { color: '#6B7280', label: status, icon: 'help-circle' };
+      return { color: Colors.textSecondary, label: status, icon: 'help-circle' };
   }
 };
 
@@ -56,7 +57,6 @@ const formatTimestamp = (timestamp: string): string => {
 };
 
 const canAcknowledge = (userRole: string | undefined): boolean => {
-  // Roles that can acknowledge alerts
   const allowedRoles = ['SUPER_ADMIN', 'TENANT_ADMIN', 'SUPERVISOR', 'OPERATOR'];
   return userRole ? allowedRoles.includes(userRole) : false;
 };
@@ -103,7 +103,7 @@ export default function AlertDetailScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#DC2626" />
+          <ActivityIndicator size="large" color={Colors.primary} />
           <Text style={styles.loadingText}>Chargement...</Text>
         </View>
       </SafeAreaView>
@@ -123,13 +123,13 @@ export default function AlertDetailScreen() {
           <Ionicons
             name={selectedAlert.type === 'FALL' ? 'warning' : 'alert-circle'}
             size={40}
-            color="#FFFFFF"
+            color={Colors.textLight}
           />
           <Text style={styles.typeText}>
             {selectedAlert.type === 'FALL' ? 'CHUTE DÉTECTÉE' : 'PRÉ-CHUTE'}
           </Text>
           <View style={[styles.statusBadge, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-            <Ionicons name={statusInfo.icon as any} size={16} color="#FFFFFF" />
+            <Ionicons name={statusInfo.icon as any} size={16} color={Colors.textLight} />
             <Text style={styles.statusBadgeText}>{statusInfo.label}</Text>
           </View>
         </View>
@@ -140,8 +140,8 @@ export default function AlertDetailScreen() {
 
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
-              <View style={styles.infoIcon}>
-                <Ionicons name="time" size={24} color="#6B7280" />
+              <View style={[styles.infoIcon, { backgroundColor: Colors.backgroundSecondary }]}>
+                <Ionicons name="time" size={24} color={Colors.primary} />
               </View>
               <View style={styles.infoContent}>
                 <Text style={styles.infoLabel}>Date et heure</Text>
@@ -155,8 +155,8 @@ export default function AlertDetailScreen() {
           {selectedAlert.location_path && (
             <View style={styles.infoCard}>
               <View style={styles.infoRow}>
-                <View style={styles.infoIcon}>
-                  <Ionicons name="location" size={24} color="#6B7280" />
+                <View style={[styles.infoIcon, { backgroundColor: Colors.backgroundSecondary }]}>
+                  <Ionicons name="location" size={24} color={Colors.turquoise} />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Localisation</Text>
@@ -200,8 +200,8 @@ export default function AlertDetailScreen() {
           {selectedAlert.radar_name && (
             <View style={styles.infoCard}>
               <View style={styles.infoRow}>
-                <View style={styles.infoIcon}>
-                  <Ionicons name="radio" size={24} color="#6B7280" />
+                <View style={[styles.infoIcon, { backgroundColor: Colors.backgroundSecondary }]}>
+                  <Ionicons name="radio" size={24} color={Colors.primary} />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Radar</Text>
@@ -216,8 +216,8 @@ export default function AlertDetailScreen() {
 
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
-              <View style={styles.infoIcon}>
-                <Ionicons name="speedometer" size={24} color="#6B7280" />
+              <View style={[styles.infoIcon, { backgroundColor: Colors.backgroundSecondary }]}>
+                <Ionicons name="speedometer" size={24} color={severityColor} />
               </View>
               <View style={styles.infoContent}>
                 <Text style={styles.infoLabel}>Sévérité</Text>
@@ -241,14 +241,14 @@ export default function AlertDetailScreen() {
       <View style={styles.footer}>
         {!userCanAcknowledge ? (
           <View style={styles.noPermissionBanner}>
-            <Ionicons name="lock-closed" size={20} color="#6B7280" />
+            <Ionicons name="lock-closed" size={20} color={Colors.textSecondary} />
             <Text style={styles.noPermissionText}>
               Vous n'avez pas la permission d'acquitter les alertes
             </Text>
           </View>
         ) : isAlreadyAcknowledged ? (
           <View style={styles.acknowledgedBanner}>
-            <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={24} color={Colors.success} />
             <Text style={styles.acknowledgedText}>Alerte déjà acquittée</Text>
           </View>
         ) : (
@@ -262,10 +262,10 @@ export default function AlertDetailScreen() {
             activeOpacity={0.8}
           >
             {isAcknowledging ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
+              <ActivityIndicator color={Colors.textLight} size="small" />
             ) : (
               <>
-                <Ionicons name="checkmark-circle" size={28} color="#FFFFFF" />
+                <Ionicons name="checkmark-circle" size={28} color={Colors.textLight} />
                 <Text style={styles.acknowledgeButtonText}>ACQUITTER L'ALERTE</Text>
               </>
             )}
@@ -279,7 +279,7 @@ export default function AlertDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.backgroundSecondary,
   },
   scrollView: {
     flex: 1,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    color: '#6B7280',
+    color: Colors.textSecondary,
     fontSize: 16,
   },
   typeBanner: {
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   typeText: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: Colors.textLight,
     marginTop: 12,
     marginBottom: 12,
   },
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   statusBadgeText: {
-    color: '#FFFFFF',
+    color: Colors.textLight,
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 6,
@@ -329,11 +329,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#374151',
+    color: Colors.textPrimary,
     marginBottom: 16,
   },
   infoCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.backgroundCard,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -357,7 +357,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -367,18 +366,18 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: Colors.textSecondary,
     marginBottom: 4,
     textTransform: 'uppercase',
   },
   infoValue: {
     fontSize: 16,
-    color: '#111827',
+    color: Colors.textPrimary,
     fontWeight: '600',
   },
   infoSubvalue: {
     fontSize: 12,
-    color: '#6B7280',
+    color: Colors.textSecondary,
     marginTop: 4,
   },
   locationGrid: {
@@ -391,12 +390,12 @@ const styles = StyleSheet.create({
   },
   locationLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: Colors.textSecondary,
     marginBottom: 2,
   },
   locationValue: {
     fontSize: 14,
-    color: '#111827',
+    color: Colors.textPrimary,
     fontWeight: '600',
   },
   severityRow: {
@@ -415,23 +414,23 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.backgroundCard,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: Colors.border,
   },
   acknowledgeButton: {
     flexDirection: 'row',
-    backgroundColor: '#DC2626',
+    backgroundColor: Colors.turquoise,
     borderRadius: 16,
     height: 64,
     alignItems: 'center',
     justifyContent: 'center',
   },
   acknowledgeButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: Colors.textSecondary,
   },
   acknowledgeButtonText: {
-    color: '#FFFFFF',
+    color: Colors.textLight,
     fontSize: 20,
     fontWeight: '800',
     marginLeft: 12,
@@ -445,7 +444,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   acknowledgedText: {
-    color: '#10B981',
+    color: Colors.success,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -454,12 +453,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.backgroundSecondary,
     borderRadius: 12,
     padding: 16,
   },
   noPermissionText: {
-    color: '#6B7280',
+    color: Colors.textSecondary,
     fontSize: 14,
     marginLeft: 8,
     textAlign: 'center',
