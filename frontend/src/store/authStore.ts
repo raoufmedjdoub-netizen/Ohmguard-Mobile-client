@@ -6,7 +6,8 @@ import socketService from '../services/socket';
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
+  isInitializing: boolean;  // For initial auth check
+  isSubmitting: boolean;    // For login/logout actions
   error: string | null;
   
   // Actions
@@ -19,11 +20,12 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
-  isLoading: true,
+  isInitializing: true,
+  isSubmitting: false,
   error: null,
 
   login: async (email: string, password: string): Promise<boolean> => {
-    set({ isLoading: true, error: null });
+    set({ isSubmitting: true, error: null });
     try {
       await authApi.login({ email, password });
       const user = await authApi.getCurrentUser();
@@ -34,11 +36,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         socketService.connect(user.tenant_id, token);
       }
       
-      set({ user, isAuthenticated: true, isLoading: false });
+      set({ user, isAuthenticated: true, isSubmitting: false });
       return true;
     } catch (error: any) {
       const message = error.response?.data?.detail || 'Erreur de connexion';
-      set({ error: message, isLoading: false });
+      set({ error: message, isSubmitting: false });
       return false;
     }
   },
@@ -50,11 +52,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   checkAuth: async (): Promise<boolean> => {
-    set({ isLoading: true });
+    set({ isInitializing: true });
     try {
       const token = await tokenManager.getAccessToken();
       if (!token) {
-        set({ isLoading: false, isAuthenticated: false });
+        set({ isInitializing: false, isAuthenticated: false });
         return false;
       }
 
@@ -65,11 +67,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         socketService.connect(user.tenant_id, token);
       }
       
-      set({ user, isAuthenticated: true, isLoading: false });
+      set({ user, isAuthenticated: true, isInitializing: false });
       return true;
     } catch (error) {
       await tokenManager.clearTokens();
-      set({ user: null, isAuthenticated: false, isLoading: false });
+      set({ user: null, isAuthenticated: false, isInitializing: false });
       return false;
     }
   },
