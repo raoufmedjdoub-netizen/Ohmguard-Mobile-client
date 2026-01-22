@@ -1,22 +1,20 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "OhmGuard Mobile",
+    "slug": "ohmguard-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "frontend",
+    "scheme": "ohmguard",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000"
-      },
-      "edgeToEdgeEnabled": true
+        "backgroundColor": "#1F2937"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -25,7 +23,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
       "expo-secure-store"
     ],
     "experiments": {
