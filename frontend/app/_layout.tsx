@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../src/store/authStore';
 import { useAlertStore } from '../src/store/alertStore';
@@ -13,10 +13,14 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const { addNewAlert, updateAlertInList } = useAlertStore();
   const segments = useSegments();
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   // Check auth on mount
   useEffect(() => {
-    checkAuth();
+    checkAuth().catch((e) => {
+      console.error('Auth check error:', e);
+      setError(String(e));
+    });
   }, []);
 
   // Setup socket listeners
@@ -42,16 +46,21 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === 'login';
-    const inAlertsGroup = segments[0] === 'alerts';
 
     if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to login
       router.replace('/login');
     } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to alerts
       router.replace('/alerts');
     }
   }, [isAuthenticated, isLoading, segments]);
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={{ color: 'red', padding: 20 }}>Error: {error}</Text>
+      </View>
+    );
+  }
 
   if (isLoading) {
     return (
