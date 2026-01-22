@@ -21,7 +21,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { login, isSubmitting, error, clearError } = useAuthStore();
   const router = useRouter();
 
   const handleLogin = async () => {
