@@ -293,13 +293,45 @@ async def get_event(event_id: str, current_user: UserInDB = Depends(get_current_
     if current_user.role != "SUPER_ADMIN" and current_user.tenant_id != event.get('tenant_id'):
         raise HTTPException(status_code=403, detail="Accès refusé")
     
-    # Enrich with location (same as list)
+    # Enrich with location data
     sensor_id = event.get("sensor_id")
     if sensor_id:
         sensor = await db.sensors.find_one({"id": sensor_id}, {"_id": 0})
         if sensor:
             event["radar_name"] = sensor.get("name")
             event["serial_product"] = sensor.get("serial_product")
+            
+            # Build location path
+            location_parts = []
+            location = {}
+            
+            if sensor.get("client_id"):
+                client = await db.clients.find_one({"id": sensor["client_id"]}, {"_id": 0})
+                if client:
+                    location_parts.append(client.get("name", ""))
+                    location["client_name"] = client.get("name")
+            
+            if sensor.get("building_id"):
+                building = await db.buildings.find_one({"id": sensor["building_id"]}, {"_id": 0})
+                if building:
+                    location_parts.append(building.get("name", ""))
+                    location["building_name"] = building.get("name")
+            
+            if sensor.get("floor_id"):
+                floor = await db.floors.find_one({"id": sensor["floor_id"]}, {"_id": 0})
+                if floor:
+                    location_parts.append(floor.get("name", ""))
+                    location["floor_name"] = floor.get("name")
+            
+            if sensor.get("room_id"):
+                room = await db.rooms.find_one({"id": sensor["room_id"]}, {"_id": 0})
+                if room:
+                    room_num = room.get("room_number") or room.get("name", "")
+                    location_parts.append(f"Ch. {room_num}")
+                    location["room_number"] = room_num
+            
+            event["location_path"] = " > ".join(location_parts) if location_parts else None
+            event["location"] = location if location else None
     
     return event
 
