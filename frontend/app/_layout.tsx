@@ -18,7 +18,7 @@ export default function RootLayout() {
       try {
         const token = await tokenManager.getAccessToken();
         if (token) {
-          setInitialRoute('alerts');
+          setInitialRoute('alerts/index');
         } else {
           setInitialRoute('login');
         }
@@ -30,7 +30,7 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (initialRoute === 'alerts') {
+    if (initialRoute === 'alerts/index') {
       const setupSocket = async () => {
         const token = await tokenManager.getAccessToken();
         if (token) {
