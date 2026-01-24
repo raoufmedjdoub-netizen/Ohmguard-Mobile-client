@@ -123,6 +123,19 @@ class EventUpdate(BaseModel):
     assigned_to: Optional[str] = None
     notes: Optional[str] = None
 
+class PushToken(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    token: str
+    device_type: Optional[str] = None  # 'ios' or 'android'
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PushTokenRequest(BaseModel):
+    token: str
+    device_type: Optional[str] = None
+
 # ==================== HELPER FUNCTIONS ====================
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
