@@ -593,6 +593,9 @@ async def create_fall_event(current_user: UserInDB = Depends(get_current_user)):
     
     await db.events.insert_one(event)
     
+    # Remove MongoDB _id for JSON serialization
+    event.pop('_id', None)
+    
     # Get location info for notification
     location_parts = []
     if sensor.get("client_id"):
