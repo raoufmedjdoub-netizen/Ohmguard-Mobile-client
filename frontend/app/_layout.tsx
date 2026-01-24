@@ -3,49 +3,52 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { tokenManager } from '../src/services/api';
+import { useAuthStore } from '../src/store/authStore';
 import Colors from '../src/constants/colors';
 
 export default function RootLayout() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const router = useRouter();
   const segments = useSegments();
+  
+  // Get auth state from store
+  const { isAuthenticated, isInitializing, checkAuth } = useAuthStore();
 
+  // Check auth on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const token = await tokenManager.getAccessToken();
-        setIsAuthenticated(!!token);
-      } catch (error) {
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
+    const init = async () => {
+      await checkAuth();
+      setIsReady(true);
     };
-    checkAuth();
+    init();
   }, []);
 
-  // Handle navigation after loading
+  // Handle navigation based on auth state
   useEffect(() => {
-    if (isLoading) return;
+    if (!isReady || isInitializing) return;
 
-    const inAuthGroup = segments[0] === 'login';
-    const inAlertsGroup = segments[0] === 'alerts';
+    const inLoginScreen = segments[0] === 'login';
+    const inAlertsScreen = segments[0] === 'alerts';
 
-    if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to login if not authenticated
+    console.log('[Layout] Auth state:', { isAuthenticated, segments, inLoginScreen, inAlertsScreen });
+
+    if (!isAuthenticated && !inLoginScreen) {
+      // Not authenticated, redirect to login
+      console.log('[Layout] Redirecting to login');
       router.replace('/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to alerts if authenticated and on login
+    } else if (isAuthenticated && inLoginScreen) {
+      // Authenticated but on login screen, redirect to alerts
+      console.log('[Layout] Redirecting to alerts');
       router.replace('/alerts');
     } else if (isAuthenticated && segments.length === 0) {
-      // If at root and authenticated, go to alerts
+      // At root and authenticated, go to alerts
+      console.log('[Layout] At root, redirecting to alerts');
       router.replace('/alerts');
     }
-  }, [isLoading, isAuthenticated, segments]);
+  }, [isReady, isInitializing, isAuthenticated, segments]);
 
-  if (isLoading) {
+  // Show loading while checking auth
+  if (!isReady || isInitializing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.turquoise} />
