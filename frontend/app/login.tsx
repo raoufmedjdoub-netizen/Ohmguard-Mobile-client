@@ -258,6 +258,31 @@ const styles = StyleSheet.create({
   eyeButton: {
     padding: 8,
   },
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: Colors.textSecondary,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  checkboxChecked: {
+    backgroundColor: Colors.turquoise,
+    borderColor: Colors.turquoise,
+  },
+  rememberMeText: {
+    color: Colors.textSecondary,
+    fontSize: 15,
+  },
   loginButton: {
     flexDirection: 'row',
     backgroundColor: Colors.turquoise,
