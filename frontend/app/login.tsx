@@ -26,23 +26,28 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   
   const { login, isSubmitting, error, clearError } = useAuthStore();
   const router = useRouter();
 
-  // Load last email on mount
+  // Load saved credentials on mount
   useEffect(() => {
-    const loadLastEmail = async () => {
+    const loadSavedCredentials = async () => {
       try {
-        const lastEmail = await AsyncStorage.getItem(LAST_EMAIL_KEY);
-        if (lastEmail) {
-          setEmail(lastEmail);
+        const remembered = await AsyncStorage.getItem(REMEMBER_ME_KEY);
+        if (remembered === 'true') {
+          setRememberMe(true);
+          const savedEmail = await AsyncStorage.getItem(SAVED_EMAIL_KEY);
+          const savedPassword = await SecureStore.getItemAsync(SAVED_PASSWORD_KEY);
+          if (savedEmail) setEmail(savedEmail);
+          if (savedPassword) setPassword(savedPassword);
         }
       } catch (e) {
-        console.log('Could not load last email');
+        console.log('Could not load saved credentials');
       }
     };
-    loadLastEmail();
+    loadSavedCredentials();
   }, []);
 
   const handleLogin = async () => {
