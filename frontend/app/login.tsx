@@ -56,11 +56,19 @@ export default function LoginScreen() {
       return;
     }
 
-    // Save email for next time
+    // Save or clear credentials based on rememberMe
     try {
-      await AsyncStorage.setItem(LAST_EMAIL_KEY, email.trim());
+      if (rememberMe) {
+        await AsyncStorage.setItem(REMEMBER_ME_KEY, 'true');
+        await AsyncStorage.setItem(SAVED_EMAIL_KEY, email.trim());
+        await SecureStore.setItemAsync(SAVED_PASSWORD_KEY, password);
+      } else {
+        await AsyncStorage.removeItem(REMEMBER_ME_KEY);
+        await AsyncStorage.removeItem(SAVED_EMAIL_KEY);
+        await SecureStore.deleteItemAsync(SAVED_PASSWORD_KEY);
+      }
     } catch (e) {
-      console.log('Could not save email');
+      console.log('Could not save credentials');
     }
 
     const success = await login(email.trim(), password);
